@@ -1,14 +1,16 @@
-package cyber.login.jwt.system.loginsystemjwt.auth;
+package cyber.login.jwt.system.loginsystemjwt.auth.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import cyber.login.jwt.system.loginsystemjwt.security.TokenService;
 import cyber.login.jwt.system.loginsystemjwt.user.dtos.AuthetinticationDto;
@@ -18,21 +20,28 @@ import cyber.login.jwt.system.loginsystemjwt.user.models.UserModel;
 import cyber.login.jwt.system.loginsystemjwt.user.repositories.UserRepository;
 import jakarta.validation.Valid;
 
-@RestController
-@RequestMapping("auth")
-public class AuthController {
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
+@Service
+public class AuthorizationService implements UserDetailsService{
+   @Autowired
+    private ApplicationContext context;
+    
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private TokenService tokenService;
 
+    private AuthenticationManager authenticationManager;
+    
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return userRepository.findByEmail(email);
+    } 
 
-    @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestBody @Valid AuthetinticationDto data){
+       public ResponseEntity<Object> login(@RequestBody @Valid AuthetinticationDto data){
+
+        authenticationManager = context.getBean(AuthenticationManager.class);
+
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.email(), data.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
 
@@ -42,8 +51,7 @@ public class AuthController {
     }
 
 
-    @PostMapping("/register")
-    public ResponseEntity<Object> register (@RequestBody RegisterDto registerDto){
+        public ResponseEntity<Object> register (@RequestBody RegisterDto registerDto){
         if (this.userRepository.findByEmail(registerDto.email()) != null ) return ResponseEntity.badRequest().build();
 
         String encryptedPassword = new BCryptPasswordEncoder().encode(registerDto.password());
@@ -54,4 +62,9 @@ public class AuthController {
 
         return ResponseEntity.ok().build();
     }
+
+
+
+    
 }
+
