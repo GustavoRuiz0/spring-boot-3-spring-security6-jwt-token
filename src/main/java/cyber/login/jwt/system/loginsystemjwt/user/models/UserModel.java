@@ -1,12 +1,12 @@
 package cyber.login.jwt.system.loginsystemjwt.user.models;
 
-import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.UUID;
 import java.util.List;
 
@@ -33,6 +33,13 @@ public class UserModel implements UserDetails {
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Date createdAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "updated_at", nullable = true)
+    private Date updatedAt;
 
     
 

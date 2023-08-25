@@ -1,5 +1,7 @@
 package cyber.login.jwt.system.loginsystemjwt.auth.services;
 
+import java.sql.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
@@ -38,28 +40,21 @@ public class AuthorizationService implements UserDetailsService{
         return userRepository.findByEmail(email);
     } 
 
-       public ResponseEntity<Object> login(@RequestBody @Valid AuthetinticationDto data){
-
+    public ResponseEntity<Object> login(@RequestBody @Valid AuthetinticationDto data){
         authenticationManager = context.getBean(AuthenticationManager.class);
-
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.email(), data.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
-
         var token = tokenService.generateToken((UserModel) auth.getPrincipal());
-
         return ResponseEntity.ok(new LoginResponseDto(token));
     }
 
 
-        public ResponseEntity<Object> register (@RequestBody RegisterDto registerDto){
+    public ResponseEntity<Object> register (@RequestBody RegisterDto registerDto){
         if (this.userRepository.findByEmail(registerDto.email()) != null ) return ResponseEntity.badRequest().build();
-
         String encryptedPassword = new BCryptPasswordEncoder().encode(registerDto.password());
-
         UserModel newUser = new UserModel(registerDto.email(), encryptedPassword, registerDto.role());
-
+        newUser.setCreatedAt(new Date(System.currentTimeMillis()));
         this.userRepository.save(newUser);
-
         return ResponseEntity.ok().build();
     }
 
