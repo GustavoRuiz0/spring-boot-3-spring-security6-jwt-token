@@ -24,7 +24,7 @@ import jakarta.validation.Valid;
 
 @Service
 public class AuthorizationService implements UserDetailsService{
-   @Autowired
+    @Autowired
     private ApplicationContext context;
     
     @Autowired
@@ -42,6 +42,7 @@ public class AuthorizationService implements UserDetailsService{
 
     public ResponseEntity<Object> login(@RequestBody @Valid AuthetinticationDto data){
         authenticationManager = context.getBean(AuthenticationManager.class);
+
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.email(), data.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
         var token = tokenService.generateToken((UserModel) auth.getPrincipal());
@@ -52,6 +53,7 @@ public class AuthorizationService implements UserDetailsService{
     public ResponseEntity<Object> register (@RequestBody RegisterDto registerDto){
         if (this.userRepository.findByEmail(registerDto.email()) != null ) return ResponseEntity.badRequest().build();
         String encryptedPassword = new BCryptPasswordEncoder().encode(registerDto.password());
+        
         UserModel newUser = new UserModel(registerDto.email(), encryptedPassword, registerDto.role());
         newUser.setCreatedAt(new Date(System.currentTimeMillis()));
         this.userRepository.save(newUser);
